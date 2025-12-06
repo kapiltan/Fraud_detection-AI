@@ -40,10 +40,10 @@ export default function TransactionsTable() {
         <tbody>
           {transactions.map(tx => (
             <tr key={tx._id || tx.id}>
-              <td style={td}>{tx._id || tx.id}</td>
-              <td style={td}>{tx.userId || tx.user}</td>
-              <td style={td}>{tx.amount}</td>
-              <td style={td}>{tx.timestamp}</td>
+              <td>{tx._id || tx.id}</td>
+              <td>{tx.userId || tx.user}</td>
+              <td>{tx.amount}</td>
+              <td>{tx.timestamp?tx.timestamp.replace("T", " "):"-"}</td>
             </tr>
           ))}
         </tbody>

@@ -1,18 +1,20 @@
 package com.fraudintel.fraudDetection.model;
 
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Document(collection = "transactions")
+@ToString
 public class Transaction {
     @Id
     private String id;
-
     private String userId;
     private Double amount;
-    private String merchant;
-    private String ip;
-    private String deviceId;
+    private LocalDateTime timestamp;
 
     public String getId() {
         return id;
@@ -38,27 +40,11 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public String getMerchant() {
-        return merchant;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setMerchant(String merchant) {
-        this.merchant = merchant;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
     }
 }
