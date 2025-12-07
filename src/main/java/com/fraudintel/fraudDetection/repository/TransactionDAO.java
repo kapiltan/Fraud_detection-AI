@@ -35,4 +35,8 @@ public class TransactionDAO {
         query.addCriteria(Criteria.where("userId").is(userId));
         return mongoTemplate.find(query, Transaction.class);
     }
+
+    public void save(Transaction tx){
+        mongoTemplate.save(tx);
+    }
 }
