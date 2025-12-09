@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function AlertsTable(){
     const [alerts, setAlerts] = useState([]);
     const [seenAlertIds, setSeenAlertIds] = useState(new Set());
+    const [severityFilter,setSeverityFilter] = useState("ALL");
 
     const fetchAlerts = async () => {
         try{
@@ -32,7 +33,7 @@ export default function AlertsTable(){
 
         alerts.forEach(alert => {
             if(alert.severity === "HIGH" && !latest.has(alert.transactionId)){
-                toast.error(`HIGH! Fraud Alert - ${alert.userId} | Rs.${alert.Amount}`, {position: "top-right", autoClose: 4000 });
+                toast.error(`HIGH! Fraud Alert - ${alert.userId} | Rs.${alert.amount}`, {position: "top-right", autoClose: 4000 });
                 latest.add(alert.transactionId);
             }
         });
@@ -41,9 +42,24 @@ export default function AlertsTable(){
 
     },[alerts]);
 
+    const visibleALerts=severityFilter==="ALL"?alerts:alerts.filter((alert) => alert.severity===severityFilter);
+
     return (<div className="alerts-container">
         <h2>Fraud Alerts</h2>
-
+        <div style={{marginBottom: "12px"}}>
+            <button onClick = {() => setSeverityFilter("ALL")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="ALL"?"bold":"normal", }}>
+                All
+            </button>
+            <button onClick = {() => setSeverityFilter("HIGH")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="HIGH"?"bold":"normal", }}>
+                HIGH
+            </button>
+            <button onClick = {() => setSeverityFilter("MEDIUM")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="MEDIUM"?"bold":"normal", }}>
+                MEDIUM
+            </button>
+            <button onClick = {() => setSeverityFilter("LOW")} style={{ padding: "6px 12px", fontWeight: severityFilter==="LOW"?"bold":"normal", }}>
+                LOW
+            </button>
+        </div>
         <table border="1" cellPadding="8" style={{ width: "100%", textAlign: "center" }}>
             <thead>
                 <tr>
@@ -55,11 +71,11 @@ export default function AlertsTable(){
                 </tr>
             </thead>
             <tbody>
-                {alerts.map((alert) => (
-                    <tr key={alert.id} style={{ backgroundColor: alert.severity=="HIGH" ? "#ffe6e6" :  alert.severity == "MEDIUM"? "#fff7cc" : "white" , color: "#000"}}>
+                {visibleALerts.map((alert) => (
+                    <tr key={alert.transactionId} style={{ backgroundColor: alert.severity=="HIGH" ? "#ffe6e6" :  alert.severity == "MEDIUM"? "#fff7cc" : "white" , color: "#000"}}>
                         <td>{alert.userId}</td>
                         <td>{alert.amount}</td>
-                        <td><span style={{padding: "4px 10px", backgroundColor: alert.severity=="HIGH" ? "#e60000" : alert.severity == "MEDIUM"? "#ff9900" : "#0077ff", color:"#ffffff", borderRadius:"6px", fontWeight:"bold"}}>{alert.severity}</span></td>
+                        <td><span style={{padding: "4px 10px", backgroundColor: alert.severity=="HIGH" ? "#e60000" : alert.severity == "MEDIUM"? "#ff9900" : "#0077ff", color:"#ffffff", borderRadius:"6px", fontWeight:"bold"}}><strong>{alert.severity}</strong></span></td>
                         <td>{alert.reason}</td>
                         <td>{alert.alertTime}</td>
                     </tr>
