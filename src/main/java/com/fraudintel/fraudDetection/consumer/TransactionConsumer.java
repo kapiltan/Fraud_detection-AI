@@ -34,9 +34,11 @@ public class TransactionConsumer {
         System.out.println("💾 Saved to MongoDB: " + tx);
 
         if(fraudService.isFraud(tx)){
-            FraudAlert alert = new FraudAlert(tx.getId(),tx.getUserId(),tx.getAmount(),"High Amount or Suspicious Spike");
+            String severity = tx.getAmount()>50000?"HIGH":tx.getAmount()>20000?"MEDIUM":"LOW";
+            severity = severity.toUpperCase().trim();
+            FraudAlert alert = new FraudAlert(tx.getId(),tx.getUserId(),tx.getAmount(),"High Amount or Suspicious Spike",severity);
             fraudAlertDAO.save(alert);
-            System.out.println("ALERT: Fraud Detected ->" + tx.getUserId());
+            System.out.println("ALERT: Fraud Detected ->" + tx.getUserId() + " | Severity: " + severity);
         }
         else{
             System.out.println("✔️ Transaction looks normal");

@@ -1,5 +1,6 @@
 import TransactionsTable from "./components/TransactionsTable";
-import AlertsTable from "./components/AlertsTable"
+import AlertsTable from "./components/AlertsTable";
+
 
 function App() {
   return (

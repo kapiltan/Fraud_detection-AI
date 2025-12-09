@@ -14,6 +14,15 @@ public class FraudAlert {
     private double amount;
     private LocalDateTime alertTime;
     private String reason;
+    private String severity;
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
 
     public String getId() {
         return id;
@@ -63,11 +72,12 @@ public class FraudAlert {
         this.reason = reason;
     }
 
-    public FraudAlert(String transactionId, String userId, double amount, String reason){
+    public FraudAlert(String transactionId, String userId, double amount, String reason, String severity){
         this.transactionId=transactionId;
         this.userId=userId;
         this.amount=amount;
         this.reason=reason;
+        this.severity = severity;
         this.alertTime = LocalDateTime.now();
     }
 

@@ -20,6 +20,9 @@ export default function TransactionsTable() {
     };
 
     loadData();
+
+    const interval = setInterval(loadData,3000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return <p>Loading...</p>;
