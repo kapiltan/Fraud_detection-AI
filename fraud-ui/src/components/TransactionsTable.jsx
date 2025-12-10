@@ -34,7 +34,7 @@ export default function TransactionsTable() {
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th style={th}>ID</th>
+            <th style={th} >ID</th>
             <th style={th}>User</th>
             <th style={th}>Amount</th>
             <th style={th}>Timestamp</th>
@@ -59,6 +59,7 @@ const th = {
   border: "1px solid #ddd",
   padding: "8px",
   background: "#f3f3f3",
+  color:"#000",
 };
 
 const td = {
