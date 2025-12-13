@@ -1,19 +1,61 @@
-import TransactionsTable from "./components/TransactionsTable";
-import AlertsTable from "./components/AlertsTable";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGoogleLogin, googleLogout } from "@react-oauth/google";
 
+import TransactionsTable from "./components/TransactionsTable";
+import AlertsTable from "./components/AlertsTable";
+// import LearningPanel from "./components/LearningPanel";
+// import InsightCharts from "./components/InsightCharts";
+
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const stored=localStorage.getItem("fd_user");
+    return stored?JSON.parse(stored):null;
+  });
+
+  const [appToken, setAppToken] = useState(() =>{
+    return localStorage.getItem("fd_token") || null;
+  });
+
+  useEffect(() => {
+    if(user) localStorage.setItem("fd_user",JSON.stringify(user));
+    else localStorage.removeItem("fd_user");
+  }, [user]);
+
+  useEffect(() => {
+     if(appToken) localStorage.setItem("fd_token", appToken);
+     else localStorage.removeItem("fd_token");
+  }, [appToken]);
 
   const login = useGoogleLogin({
-    scope: "openid profile email",
+    scope: "openid profile email https://www.googleapis.com/auth/userinfo.profile",
     onSuccess: async (tokenResponse) => {
       try {
-        const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo?alt=json", {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
         const profile = await res.json();
+
+        if(profile.picture){
+            const baseUrl = profile.picture.split("=")[0];
+            profile.picture = `${baseUrl}=s96-c`;
+        }
+
+        const backendRes= await fetch("http://localhost:8080/api/auth/google", {
+           method: "POST",
+           headers: {"Content-Type" : "application/json"},
+           body: JSON.stringify({
+              accessToken: tokenResponse.access_token,
+           }),
+        });
+
+        if(!backendRes.ok){
+            console.error("Backend auth failed");
+        }
+        else{
+            const data = await backendRes.json();
+            setAppToken(data.jwt || null);
+        }
+
         setUser(profile);
       } catch (err) {
         console.error("Error fetching user info:", err);
@@ -25,17 +67,22 @@ function App() {
   const handleLogout = () => {
     googleLogout();
     setUser(null);
+    setAppToken(null);
   };
+
+  const isAuthenticated = !!user && !!appToken;
 
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#181818",
-        color: "#fff",
-        padding: "24px",
-        boxSizing: "border-box",
-      }}
+        style={{
+          height: "100vh",
+          width: "100vw",
+          backgroundColor: "#181818",
+          color: "#fff",
+          padding: "24px",
+          boxSizing: "border-box",
+          overflowY: "auto",
+        }}
     >
       {/* Header */}
       <header
@@ -56,21 +103,41 @@ function App() {
               alignItems: "center",
               gap: "12px",
               background: "#252525",
-              padding: "8px 14px",
+              padding: "8px 16px",
               borderRadius: "999px",
+              minWidth: "0",
+              maxWidth: "100%",
+              flexShrink: 0,
             }}
           >
             {user.picture && (
-              <img
-                src={user.picture}
-                alt="avatar"
-                style={{ width: 36, height: 36, borderRadius: "50%" }}
-              />
+                <img
+                  src={user.picture}
+                  alt="avatar"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    flexShrink: 0,
+                  }}
+                />
             )}
-            <div style={{ textAlign: "right" }}>
+            <div
+              style={{
+                textAlign: "right",
+                minWidth: 0,
+                overflow: "hidden",        // FIXED
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               <strong>{user.name}</strong>
-              <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>{user.email}</div>
+              <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>
+                {user.email}
+              </div>
             </div>
+
             <button
               onClick={handleLogout}
               style={{
@@ -120,10 +187,13 @@ function App() {
         </div>
       )}
 
-      {/* Live Data Tables */}
+      <div style={{ display:"flex", flexDirection:"column", gap:"20px"}}>
+      <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
       <div style={{ marginTop: "10px" }}>
-        <TransactionsTable />
-        <AlertsTable />
+        <TransactionsTable token={appToken} isAuthenticated={isAuthenticated} />
+        <AlertsTable token={appToken} isAuthenticated={isAuthenticated}/>
+      </div>
+      </div>
       </div>
     </div>
   );
