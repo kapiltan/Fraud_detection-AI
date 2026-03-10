@@ -37,7 +37,7 @@ export default function TransactionsTable({ token, isAuthenticated }) {
           return;
         }
 
-        setAlerts([...data].reverse());
+        setTransactions([...data].reverse());
 
       } catch (err) {
         setError("Failed to load transactions");
