@@ -14,7 +14,10 @@ public class FraudAlertController {
     private FraudAlertService fraudAlertService;
 
     @GetMapping("/alerts")
-    public List<FraudAlert> getAlerts(){
-        return fraudAlertService.getAllAlerts();
+    public List<FraudAlert> getAlerts() {
+        System.out.println("Fetching alerts...");
+        List<FraudAlert> alerts = fraudAlertService.getAllAlerts();
+        System.out.println("Alerts found: " + alerts.size());
+        return alerts;
     }
 }

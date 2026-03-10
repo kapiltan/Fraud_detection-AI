@@ -20,19 +20,20 @@ public class TransactionController {
     private final String TOPIC = "fraud-transactions";
 
     @PostMapping("/create")
-    public Transaction createTx(@RequestBody Transaction tx){
+    public Transaction createTx(@RequestBody Transaction tx) {
         tx.setId(UUID.randomUUID().toString());
         tx.setTimestamp(LocalDateTime.now());
-        Transaction saved=dao.insert(tx);
-        kafkaTemplate.send(TOPIC,saved.getId(),saved);
+        Transaction saved = dao.insert(tx);
+        kafkaTemplate.send(TOPIC, saved.getId(), saved);
         System.out.println("📤 Sent to Kafka: " + saved);
         return saved;
     }
 
     @GetMapping("/all")
-    public List<Transaction>  getAll(){
+    public List<Transaction> getAll() {
+        System.out.println("Fetching transactions...");
         List<Transaction> transaction = dao.findAll();
-//        System.out.println(transaction.get(0));
+        System.out.println("Transactions found: " + transaction.size());
         return transaction;
     }
 }

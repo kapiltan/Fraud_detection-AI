@@ -1,62 +1,80 @@
-import {useEffect, useState} from "react";
-import {ToastContainer, toast} from "react-toastify";
+import { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function AlertsTable(){
+export default function AlertsTable({ token, isAuthenticated }) {
     const [alerts, setAlerts] = useState([]);
     const [seenAlertIds, setSeenAlertIds] = useState(new Set());
-    const [severityFilter,setSeverityFilter] = useState("ALL");
+    const [severityFilter, setSeverityFilter] = useState("ALL");
 
     const fetchAlerts = async () => {
-        try{
-            const response = await fetch("http://localhost:8080/alerts");
+        try {
+            console.log("Sending token: ", token);
+            const response = token
+                ? await fetch("http://localhost:8080/alerts", {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                : await fetch("http://localhost:8080/api/public/alerts");
+
+
+            if (response.status === 401 || response.status === 403) {
+                const demo = await fetch("http://localhost:8080/api/public/alerts");
+                setAlerts(await demo.json());
+                return;
+            }
             const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                console.error("Backend returned error:", data);
+                return;
+            }
+
             setAlerts([...data].reverse());
         }
-        catch (error){
+        catch (error) {
             console.error("Error fetching alerts:", error);
         }
     };
 
-    useEffect (() => {
-       fetchAlerts();
-       const interval = setInterval(fetchAlerts,3000);
-       return () => clearInterval(interval);
-    }, []);
+    useEffect(() => {
+        fetchAlerts();
+        const interval = setInterval(fetchAlerts, 3000);
+        return () => clearInterval(interval);
+    }, [token]);
 
-//     console.log(alerts);
+    //     console.log(alerts);
 
     useEffect(() => {
-        if(alerts.length === 0) return;
+        if (alerts.length === 0) return;
 
         const latest = new Set(seenAlertIds);
 
         alerts.forEach(alert => {
-            if(alert.severity === "HIGH" && !latest.has(alert.transactionId)){
-                toast.error(`HIGH! Fraud Alert - ${alert.userId} | Rs.${alert.amount}`, {position: "top-right", autoClose: 4000 });
+            if (alert.severity === "HIGH" && !latest.has(alert.transactionId)) {
+                toast.error(`HIGH! Fraud Alert - ${alert.userId} | Rs.${alert.amount}`, { position: "top-right", autoClose: 4000 });
                 latest.add(alert.transactionId);
             }
         });
 
         setSeenAlertIds(latest);
 
-    },[alerts]);
+    }, [alerts]);
 
-    const visibleALerts=severityFilter==="ALL"?alerts:alerts.filter((alert) => alert.severity===severityFilter);
+    const visibleALerts = severityFilter === "ALL" ? alerts : alerts.filter((alert) => alert.severity === severityFilter);
 
     return (<div className="alerts-container">
         <h2>Fraud Alerts</h2>
-        <div style={{marginBottom: "12px"}}>
-            <button onClick = {() => setSeverityFilter("ALL")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="ALL"?"bold":"normal", }}>
+        <div style={{ marginBottom: "12px" }}>
+            <button onClick={() => setSeverityFilter("ALL")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter === "ALL" ? "bold" : "normal", }}>
                 All
             </button>
-            <button onClick = {() => setSeverityFilter("HIGH")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="HIGH"?"bold":"normal", }}>
+            <button onClick={() => setSeverityFilter("HIGH")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter === "HIGH" ? "bold" : "normal", }}>
                 HIGH
             </button>
-            <button onClick = {() => setSeverityFilter("MEDIUM")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter==="MEDIUM"?"bold":"normal", }}>
+            <button onClick={() => setSeverityFilter("MEDIUM")} style={{ marginRight: "8px", padding: "6px 12px", fontWeight: severityFilter === "MEDIUM" ? "bold" : "normal", }}>
                 MEDIUM
             </button>
-            <button onClick = {() => setSeverityFilter("LOW")} style={{ padding: "6px 12px", fontWeight: severityFilter==="LOW"?"bold":"normal", }}>
+            <button onClick={() => setSeverityFilter("LOW")} style={{ padding: "6px 12px", fontWeight: severityFilter === "LOW" ? "bold" : "normal", }}>
                 LOW
             </button>
         </div>
@@ -72,16 +90,16 @@ export default function AlertsTable(){
             </thead>
             <tbody>
                 {visibleALerts.map((alert) => (
-                    <tr key={alert.transactionId} style={{ backgroundColor: alert.severity=="HIGH" ? "#ffe6e6" :  alert.severity == "MEDIUM"? "#fff7cc" : "white" , color: "#000"}}>
+                    <tr key={alert.transactionId} style={{ backgroundColor: alert.severity == "HIGH" ? "#ffe6e6" : alert.severity == "MEDIUM" ? "#fff7cc" : "white", color: "#000" }}>
                         <td>{alert.userId}</td>
                         <td>{alert.amount}</td>
-                        <td><span style={{padding: "4px 10px", backgroundColor: alert.severity=="HIGH" ? "#e60000" : alert.severity == "MEDIUM"? "#ff9900" : "#0077ff", color:"#ffffff", borderRadius:"6px", fontWeight:"bold"}}><strong>{alert.severity}</strong></span></td>
+                        <td><span style={{ padding: "4px 10px", backgroundColor: alert.severity == "HIGH" ? "#e60000" : alert.severity == "MEDIUM" ? "#ff9900" : "#0077ff", color: "#ffffff", borderRadius: "6px", fontWeight: "bold" }}><strong>{alert.severity}</strong></span></td>
                         <td>{alert.reason}</td>
                         <td>{alert.alertTime}</td>
                     </tr>
                 ))}
             </tbody>
         </table>
-        <ToastContainer/>
+        <ToastContainer />
     </div>);
 }

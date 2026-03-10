@@ -12,9 +12,17 @@ function App() {
     return stored?JSON.parse(stored):null;
   });
 
-  const [appToken, setAppToken] = useState(() =>{
-    return localStorage.getItem("fd_token") || null;
-  });
+    console.log("Sending token: ", user);
+
+  const [appToken, setAppToken] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("fd_token");
+    console.log("Sending token: ", stored);
+    if (stored) setAppToken(stored);
+  }, []);
+
+    console.log("Sending token: ", appToken);
 
   useEffect(() => {
     if(user) localStorage.setItem("fd_user",JSON.stringify(user));
@@ -40,23 +48,34 @@ function App() {
             profile.picture = `${baseUrl}=s96-c`;
         }
 
-        const backendRes= await fetch("http://localhost:8080/api/auth/google", {
-           method: "POST",
-           headers: {"Content-Type" : "application/json"},
-           body: JSON.stringify({
-              accessToken: tokenResponse.access_token,
-           }),
+        const backendRes = await fetch("http://localhost:8080/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            accessToken: tokenResponse.access_token,
+          }),
         });
 
-        if(!backendRes.ok){
-            console.error("Backend auth failed");
-        }
-        else{
-            const data = await backendRes.json();
-            setAppToken(data.jwt || null);
+        const data = await backendRes.json();
+        console.log("Backend returned:", data);
+
+        if (!backendRes.ok) {
+          console.error("Backend auth failed");
+        } else {
+          const jwt = data.jwt;
+
+          console.log("Received JWT from backend:", jwt);
+          setUser(profile);
+
+          if (jwt) {
+            setAppToken(jwt);
+            localStorage.setItem("fd_token", jwt);
+          } else {
+            console.error("Backend returned no JWT!");
+          }
+          console.log(localStorage.getItem("fd_token"));
         }
 
-        setUser(profile);
       } catch (err) {
         console.error("Error fetching user info:", err);
       }
@@ -153,7 +172,8 @@ function App() {
           </div>
         ) : (
           <button
-            onClick={() => login()}
+            onClick={() => 
+              login()}
             style={{
               padding: "10px 18px",
               borderRadius: "999px",
