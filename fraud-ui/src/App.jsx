@@ -3,16 +3,17 @@ import { useGoogleLogin, googleLogout } from "@react-oauth/google";
 
 import TransactionsTable from "./components/TransactionsTable";
 import AlertsTable from "./components/AlertsTable";
+import AnalyticsPanel from "./components/AnalyticsPanel";
 // import LearningPanel from "./components/LearningPanel";
 // import InsightCharts from "./components/InsightCharts";
 
 function App() {
   const [user, setUser] = useState(() => {
-    const stored=localStorage.getItem("fd_user");
-    return stored?JSON.parse(stored):null;
+    const stored = localStorage.getItem("fd_user");
+    return stored ? JSON.parse(stored) : null;
   });
 
-    console.log("Sending token: ", user);
+  console.log("Sending token: ", user);
 
   const [appToken, setAppToken] = useState(null);
 
@@ -22,16 +23,16 @@ function App() {
     if (stored) setAppToken(stored);
   }, []);
 
-    console.log("Sending token: ", appToken);
+  console.log("Sending token: ", appToken);
 
   useEffect(() => {
-    if(user) localStorage.setItem("fd_user",JSON.stringify(user));
+    if (user) localStorage.setItem("fd_user", JSON.stringify(user));
     else localStorage.removeItem("fd_user");
   }, [user]);
 
   useEffect(() => {
-     if(appToken) localStorage.setItem("fd_token", appToken);
-     else localStorage.removeItem("fd_token");
+    if (appToken) localStorage.setItem("fd_token", appToken);
+    else localStorage.removeItem("fd_token");
   }, [appToken]);
 
   const login = useGoogleLogin({
@@ -43,9 +44,9 @@ function App() {
         });
         const profile = await res.json();
 
-        if(profile.picture){
-            const baseUrl = profile.picture.split("=")[0];
-            profile.picture = `${baseUrl}=s96-c`;
+        if (profile.picture) {
+          const baseUrl = profile.picture.split("=")[0];
+          profile.picture = `${baseUrl}=s96-c`;
         }
 
         const backendRes = await fetch("http://localhost:8080/api/auth/google", {
@@ -93,15 +94,15 @@ function App() {
 
   return (
     <div
-        style={{
-          height: "100vh",
-          width: "100vw",
-          backgroundColor: "#181818",
-          color: "#fff",
-          padding: "24px",
-          boxSizing: "border-box",
-          overflowY: "auto",
-        }}
+      style={{
+        height: "100vh",
+        width: "100vw",
+        backgroundColor: "#181818",
+        color: "#fff",
+        padding: "24px",
+        boxSizing: "border-box",
+        overflowY: "auto",
+      }}
     >
       {/* Header */}
       <header
@@ -130,17 +131,17 @@ function App() {
             }}
           >
             {user.picture && (
-                <img
-                  src={user.picture}
-                  alt="avatar"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    flexShrink: 0,
-                  }}
-                />
+              <img
+                src={user.picture}
+                alt="avatar"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
             )}
             <div
               style={{
@@ -172,7 +173,7 @@ function App() {
           </div>
         ) : (
           <button
-            onClick={() => 
+            onClick={() =>
               login()}
             style={{
               padding: "10px 18px",
@@ -207,13 +208,14 @@ function App() {
         </div>
       )}
 
-      <div style={{ display:"flex", flexDirection:"column", gap:"20px"}}>
-      <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
-      <div style={{ marginTop: "10px" }}>
-        <TransactionsTable token={appToken} isAuthenticated={isAuthenticated} />
-        <AlertsTable token={appToken} isAuthenticated={isAuthenticated}/>
-      </div>
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div style={{ marginTop: "10px" }}>
+            <AnalyticsPanel token={appToken} isAuthenticated={isAuthenticated} />
+            <TransactionsTable token={appToken} isAuthenticated={isAuthenticated} />
+            <AlertsTable token={appToken} isAuthenticated={isAuthenticated} />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -48,4 +48,20 @@ public class TransactionController {
 
         return dao.findAll(page, size, sort);
     }
+
+    private int calculateRisk(Transaction tx) {
+
+        int score = 0;
+
+        if (tx.getAmount() > 5000)
+            score += 40;
+
+        if (tx.getAmount() > 10000)
+            score += 30;
+
+        if (tx.getUserId() != null && tx.getUserId().startsWith("NEW"))
+            score += 20;
+
+        return score;
+    }
 }
