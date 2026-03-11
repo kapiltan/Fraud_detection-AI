@@ -5,6 +5,9 @@ export default function TransactionsTable({ token, isAuthenticated }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(0);
+
+  const size = 5;
 
   console.log("Sending token: ", token);
 
@@ -18,7 +21,7 @@ export default function TransactionsTable({ token, isAuthenticated }) {
         if (token) {
           console.log("Fetching REAL transactions");
 
-          response = await fetch("http://localhost:8080/transactions/all", {
+          response = await fetch(`http://localhost:8080/transactions?page=${page}&size=${size}&sort=timestamp`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -37,7 +40,7 @@ export default function TransactionsTable({ token, isAuthenticated }) {
           return;
         }
 
-        setTransactions([...data].reverse());
+        setTransactions(data);
 
       } catch (err) {
         setError("Failed to load transactions");
@@ -52,7 +55,7 @@ export default function TransactionsTable({ token, isAuthenticated }) {
     const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
 
-  }, [token]);
+  }, [token, page]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -74,12 +77,28 @@ export default function TransactionsTable({ token, isAuthenticated }) {
             <tr key={tx._id || tx.id}>
               <td>{tx._id || tx.id}</td>
               <td>{tx.userId || tx.user}</td>
-              <td>{tx.amount}</td>
+              <td style={td}>{tx.amount}</td>
               <td>{tx.timestamp ? tx.timestamp.replace("T", " ") : "-"}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <button
+        onClick={() => setPage((p) => Math.max(p - 1, 0))}
+        disabled={page === 0}
+      >
+        Previous
+      </button>
+
+      <span style={{ margin: "0 10px" }}>
+        Page {page + 1}
+      </span>
+
+      <button
+        onClick={() => setPage((p) => p + 1)}
+      >
+        Next
+      </button>
     </div>
   );
 }

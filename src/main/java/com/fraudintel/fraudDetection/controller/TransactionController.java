@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/transactions")
+@CrossOrigin(origins = "http://localhost:5173")
 public class TransactionController {
     @Autowired
     private TransactionDAO dao;
@@ -35,5 +36,16 @@ public class TransactionController {
         List<Transaction> transaction = dao.findAll();
         System.out.println("Transactions found: " + transaction.size());
         return transaction;
+    }
+
+    @GetMapping
+    public List<Transaction> getTransactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "timestamp") String sort) {
+
+        System.out.println("Fetching page: " + page);
+
+        return dao.findAll(page, size, sort);
     }
 }
